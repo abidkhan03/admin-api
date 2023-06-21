@@ -1,0 +1,10 @@
+[Unit]
+Description=freeling
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/analyze -f es.cfg --flush --output json --server --port 50005
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

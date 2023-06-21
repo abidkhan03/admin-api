@@ -1,0 +1,16 @@
+version: "3.3"
+
+services:
+  db:
+    container_name: spongeling-db
+    restart: unless-stopped
+    image: postgres:alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/0-init.sql
+      - ./db/data.sql:/docker-entrypoint-initdb.d/1-data.sql

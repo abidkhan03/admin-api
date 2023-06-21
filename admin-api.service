@@ -1,0 +1,12 @@
+[Unit]
+Description=admin-api
+After=network.target
+
+[Service]
+WorkingDirectory=/usr/local/spongeling/admin-api
+EnvironmentFile=/usr/local/spongeling/admin-api/.env
+ExecStart=/usr/local/spongeling/admin-api/admin-api
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

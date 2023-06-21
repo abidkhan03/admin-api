@@ -1,0 +1,641 @@
+openapi: 3.0.3
+
+info:
+  title: Spongeling Admin API
+  version: 1.0.0
+  description: API to add pos and save patterns
+
+servers:
+  - url: '{protocol}://{server}'
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      server:
+        default: localhost:6543
+        
+security:
+  - BasicAuth: []
+      
+tags:
+  - name: Authentication
+    description: An API for user authentication infromation
+  - name: Phrase Pattern
+    description: An API for CRUD operations for patterns and generating examples and fetching pos for patterns
+  - name: Category
+    description: An API for fetching categories, subcategories, and patterns against a category
+  - name: Classification
+    description: An API for saving, updating, fetching, and deleting custom pos
+        
+paths:
+  # LOGIN
+  /login:
+    post:
+      tags:
+        - Authentication
+      operationId: user-login
+      summary: Endpoint for user login
+      description: A web service endpoint for verifing user information for maintaining user session
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+          description: Valid response
+          
+  # PATTERNS
+  /pattern/phrase:
+    post:
+      tags:
+        - Phrase Pattern
+      operationId: add-pattern
+      summary: Endpoint to save a phrase pattern information
+      description: A web service for saving a pattern information, pattern examples, and pattern pos against a category
+      requestBody:
+        description: Request object containing pattern information
+        required: true
+        content:
+          application/json:
+             schema:
+              $ref: '#/components/schemas/RequestAddPattern'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseAddPattern'
+          description: Valid response
+  /pattern/phrase/{phrase_id}:
+    patch:
+      tags:
+        - Phrase Pattern
+      operationId: update-pattern
+      summary: Endpoint to update a phrase pattern information
+      description: A web service endpoint for updating a phrase pattern information, pattern examples, and pattern pos against a category
+      parameters:
+        - deprecated: false
+          name: phrase_id
+          description: pattern identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      requestBody:
+        description: Request object containing pattern
+        required: true
+        content:
+          application/json:
+             schema:
+              $ref: '#/components/schemas/RequestUpdatePattern'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUpdatePattern'
+          description: Valid response
+    delete:
+      tags:
+        - Phrase Pattern
+      operationId: delete-pattern
+      summary: Endpoint to delete a phrase pattern information
+      description: A web service endpoint for deleting a phrase pattern information, pattern examples, and pattern pos against a category
+      parameters:
+        - deprecated: false
+          name: phrase_id
+          description: pattern identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDeletePattern'
+          description: Valid response
+  /pattern/phrase/pos:
+    post:
+      tags:
+        - Phrase Pattern
+      operationId: get-words-pos
+      summary: Endpoint to get the pos for each word in a phrase
+      description: A web service endpoint for generating pos for each word in a phrase provided in the request text pattern
+      requestBody:
+        description: Request object contaning text pattern
+        required: true
+        content:
+          application/json:
+             schema:
+              $ref: '#/components/schemas/RequestGetWordsPos'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetWordsPos'
+          description: Valid response
+  /pattern/phrase/example:
+    post:
+      tags:
+        - Phrase Pattern
+      operationId: get-pattern-examples
+      summary: Endpoint to get multiple pattern examples of a phrase
+      description: A web service endpoint for getting multiple pattern examples on a phrase
+      requestBody:
+        description: Request object containing pattern pos
+        required: true
+        content:
+          application/json:
+             schema:
+              $ref: '#/components/schemas/RequestGetPatternExamples'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetPatternExamples'
+          description: Valid response
+
+          
+  # CATEGORIES
+  /category/top:
+    get:
+      tags:
+        - Category
+      operationId: get-all-categories
+      summary: Endpoint to get all top level categories
+      description: A web service endpoint for fetching all the top level categories
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetTopCategories'
+          description: Valid response
+  /category/{category_id}/subcategories:
+    get:
+      tags:
+        - Category
+      operationId: get-all-subcategories
+      summary: Endpoint to get all subcategories for a category
+      description: A web service endpoint for fetching all the subcategories against the category identifier
+      parameters:
+        - deprecated: false
+          name: category_id
+          description: category identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetSubcategories'
+          description: Valid response      
+  /category/{category_id}/pos/example:
+    get:
+      tags:
+        - Category
+      operationId: get-pattern
+      summary: Endpoint to get a pattern for a category
+      description: A web service endpoint to get a pattern against the category identifier
+      parameters:
+        - deprecated: false
+          name: category_id
+          description: category identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetCategoryPattern'
+          description: Valid response
+  
+  # WORD CLASSES
+  /word/class:
+    get:
+      tags:
+        - Classification
+      operationId: get-all-custom-pos
+      summary: Endpoint to get all custom pos
+      description: A web service endpoint for fetching all custom pos page-by-page with description and associated words
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseGetAllWordClass'
+          description: Valid response
+    post:
+      tags:
+        - Classification
+      operationId: add-custom-pos
+      summary: Endpoint to save a custom pos
+      description: A web service endpoint for saving a custom pos with description and associated words
+      requestBody:
+        description: Request object contaning custom pos information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAddWordClass'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseAddWordClass'
+          description: Valid response
+  /word/class/{class_id}:
+    patch:
+      tags:
+        - Classification
+      operationId: update-custom-pos
+      summary: Endpoint to update a custom pos
+      description: A web service endpoint for updating a custom pos and it's description and associated words against the custom pos identifier
+      parameters:
+        - deprecated: false
+          name: class_id
+          description: custom pos identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      requestBody:
+        description: Request object contaning custom pos information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestUpdateWordClass'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseUpdateWordClass'
+          description: Valid response
+    delete:
+      tags:
+        - Classification
+      operationId: delete-custom-pos
+      summary: Endpoint to delete a custom pos
+      description: A web service endpoint for deleting a custom pos against the it's identifier
+      parameters:
+        - deprecated: false
+          name: class_id
+          description: custom pos identifier
+          schema:
+            type: integer
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseDeleteWordClass'
+          description: Valid response
+          
+components:
+  schemas:
+    # WORD CLASSES
+    ResponseGetAllWordClass:
+      type: array
+      items:
+        $ref: '#/components/schemas/WordClass'
+    RequestAddWordClass:
+      $ref: '#/components/schemas/WordClass'
+    ResponseAddWordClass:
+      $ref: '#/components/schemas/Response'
+    RequestUpdateWordClass:
+      $ref: '#/components/schemas/WordClass'
+    ResponseUpdateWordClass:
+      $ref: '#/components/schemas/Response'
+    ResponseDeleteWordClass:
+      $ref: '#/components/schemas/Response'
+      
+    # PATTERNS
+    RequestGetWordsPos:
+      type: object
+      properties:
+        phrase:
+          type: string
+          example: El Libro Blanco
+    ResponseGetWordsPos:
+      $ref: '#/components/schemas/WordsPos'
+    RequestGetPatternExamples:
+      type: object
+      properties:
+        tokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/PosSequence'
+    ResponseGetPatternExamples:
+      $ref: '#/components/schemas/PatternExamples'
+    # Pattern CRUD
+    RequestAddPattern:
+      $ref: '#/components/schemas/Phrase'
+    ResponseAddPattern:
+      $ref: '#/components/schemas/Response'
+    RequestUpdatePattern:
+      $ref: '#/components/schemas/UpdatePhrase'
+    ResponseUpdatePattern:
+      $ref: '#/components/schemas/Response'
+    ResponseDeletePattern:
+      $ref: '#/components/schemas/Response'
+      
+    # CATEGORIES
+    ResponseGetTopCategories:
+      $ref: '#/components/schemas/Categories'
+    ResponseGetSubcategories:
+      $ref: '#/components/schemas/Categories'
+    ResponseGetCategoryPattern:
+      $ref: '#/components/schemas/CategoryPattern'
+    
+    
+    # SHARED OBJECTS
+    
+    # Login
+    # Login:
+    #   type: object
+    #   properties:
+    #     email:
+    #       type: string
+    #     password:
+    #       type: string
+    #   example:
+    #     {
+    #       "email": "someone@gmail.com",
+    #       "password": "12345678"
+    #     }
+        
+    # Category
+    Categories:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+      example:
+        [
+          {
+            "id": 1,
+            "name": "Asking questions"
+          },
+          {
+            "id": 2,
+            "name": "Future Tense"
+          },
+          {
+            "id": 3,
+            "name": "Negatives"
+          },
+          {
+            "id": 4,
+            "name": "Past Tense"
+          },
+          {
+            "id": 5,
+            "name": "Present Continues"
+          }, 
+          {
+            "id": 6,
+            "name": "Reflexive Verbs"
+          }
+        ]
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      example:
+        {
+          "id": 1,
+          "name": "Tag questions"
+        }
+    CategoryPattern:
+      required:
+        - id
+        - phrase
+        - tokens
+        - examples
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        phrase:
+          type: string
+          example: El Libro Blanco
+        tokens:
+          type: array
+          items:
+            $ref: '#/components/schemas/PosSequence'
+        examples:
+          $ref: '#/components/schemas/PatternExamples'
+        rule:
+          type: string
+          example: Lorem Ipsum
+        tip:
+          type: string
+          example: Lorem Ipsum
+          
+    # Pattern
+    Phrase:
+      required:
+        - category
+        - subcategory1
+        - subcategory2
+        - phrase
+        - phrase_pos
+        - examples
+      type: object
+      properties:
+        category:
+          type: string
+          example: Asking question
+        subcategory1:
+          type: string
+          example: Tag question
+        subcategory2:
+          type: string
+          example: Rhetorical question
+        phrase:
+          type: string
+          example: El Libro Blanco
+        phrase_pos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PosSequence'
+        examples:
+          $ref: '#/components/schemas/PatternExamples'
+        rule:
+          type: string
+          example: Lorem Ipsum
+        tip:
+          type: string
+          example: Lorem Ipsum
+    UpdatePhrase:
+      required:
+        - phrase
+        - phrase_pos
+        - examples
+      type: object
+      properties:
+        phrase:
+          type: string
+          example: El Libro Blanco
+        phrase_pos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PosSequence'
+        examples:
+          $ref: '#/components/schemas/PatternExamples'
+        rule:
+          type: string
+          example: Lorem Ipsum
+        tip:
+          type: string
+          example: Lorem Ipsum
+    PosSequence:
+      type: object
+      properties:
+        seq_id:
+          type: integer
+        pos:
+          type: string
+        word:
+          type: string
+        class:
+          type: string
+      example:
+        {
+          "seq_id": 1,
+          "pos": ,
+          "word": "El",
+          "class":
+        }
+    PatternExamples:
+      type: array
+      items:
+        type: string
+      example:
+        - La Casa Blanca
+        - El Perro Grande
+        - El Hombre Alto
+        - La Mujer Inteligente
+    WordsPos:
+      type: array
+      items:
+        type: object
+        properties:
+          seq_id:
+            type: integer
+          word:
+            type: string
+          pos:
+            type: array
+            items:
+              type: string
+          class:
+            type: array
+            items:
+              type: string
+      example:
+        [
+          {
+            "seq_id": 1,
+            "word": "El",
+            "pos": [ "DA0MS0" ],
+            "class": []
+          },
+          {
+            "seq_id": 2,
+            "word": "Libro",
+            "pos": [ "NP00G00" ],
+            "class": []
+          },
+          {
+            "seq_id": 3,
+            "word": "Blanco",
+            "pos": [ "NP00SP0" ],
+            "class": [ "color" ]
+          }
+        ]
+        
+    # Word Class
+    Words:
+      required:
+        - words
+      properties:
+        words:
+          type: array
+          items:
+            type: string
+      example:
+        words:
+          - blanco
+          - negro
+          - azul
+          - rojo
+    WordClass:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        words:
+          $ref: '#/components/schemas/Words'
+      example:
+        name: COL
+        description: List of colours to be used to show how they are used to describe things.
+        words:
+          - blanco
+          - negro
+          - azul
+          - rojo
+          
+    # Shared
+    Response:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: integer
+        message:
+          type: string
+      example:
+        id: 17
+        status: 200
+        message: successfully done
+          
+          
+  securitySchemes:
+    BasicAuth:     # <-- arbitrary name for the security scheme
+      type: http
+      scheme: basic
+        
+        
+        
+        
+        
+        
+        
+        
+        
